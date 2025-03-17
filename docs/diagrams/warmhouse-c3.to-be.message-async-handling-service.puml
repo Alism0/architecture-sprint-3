@@ -1,0 +1,94 @@
+@startuml
+title Warm House System. Module Control Messages Async Handling Service Component Diagram
+
+top to bottom direction
+
+!includeurl ./templates/C4_Component.puml
+
+System_Boundary(WarmHouseSystemBoundary, "Warm House System") {
+  Container(ModuleControlMessagesAsyncHandlingService, "Module Control Messages Async Handling Service", "Java", "Сервис асинхронной обработки сообщений управления модулями")
+  ContainerQueue(MessageBroker, "Message Broker", "RabbitMQ", "Брокер сообщений для асинхронных операций")
+  Container(HandlingResultsPushService, "Handling Results Push Service", "Java", "Сервис отправки результатов обработки")
+  Container(ModulesControlService, "Modules Control Service", "Java", "Сервис управления модулями и командами модулей")
+  Container(VideoTransferModulesControlService, "Video Transfer Modules Control Service", "Java, Adapter, Video Transfer Control Protocol", "Сервис для управления модулями видеопередачи")
+  Container(SmartHomeModulesControlService, "Smart Home Modules Control Service", "Java, Adapter, Smart Home Control Protocol", "Сервис для управления модулями умного дома по стандартному протоколу")
+  Container(WarmHouseModulesControlService, "Warm House Modules Control Service", "Java, Adapter, Warm House Control Protocol", "Сервис для управления модулями 'Теплый дом' по прежнему протоколу")
+}
+
+Container(ModuleControlMessagesAsyncHandlingService, "Module Control Messages Async Handling Service", "Java") {
+  Component(HandleUserModulesScriptsCommandConsumer, "Handle User Modules Scripts Command Consumer", "Consumer", "Потребитель команд для обработки пользовательских сценариев управления модулями")
+  Component(HandleModuleControlCommandConsumer, "Handle Module Control Command Consumer", "Consumer", "Потребитель команд для обработки команд управления модулем")
+  Component(UpdateUserModuleStatusCommandConsumer, "Update User Module Status Command Consumer", "Consumer", "Потребитель команд для обработки команд управления модулем")
+  Component(CreateControlModuleCommandConsumer, "Create Control Module Command Consumer", "Consumer", "Потребитель команд для создания модуля управления")
+  Component(DeleteControlModuleCommandConsumer, "Delete Control Module Command Consumer", "Consumer", "Потребитель команд для удаления модуля управления")
+  Component(PushHandlingResultsCommandConsumer, "Push Control Module Handling Results Command Consumer", "Consumer", "Потребитель команд для отправки результатов обрпботеи")
+
+  Component(SmartHomeModulesControlServiceApiClient, "Smart Home Modules Control Service API Client", "HTTP API Client","Клиент для работы с API сервиса для управления модулями умного дома по стандартному протоколу")
+  Component(WarmHouseModulesControlServiceApiClient, "Warm House Modules Control Service API Client", "HTTP API Client","Клиент для работы с API сервиса для управления модулями 'Теплый дом' по прежнему протоколу")
+  Component(VideoTransferModulesControlServiceApiClient, "Video Transfer Modules Control Service API Client", "HTTP API Client","Клиент для работы с API сервиса для управления модулями видеопередачи")
+  Component(ModulesControlServiceApiClient, "Modules Control Service API Client", "HTTP API Client","Клиент для работы с API сервиса для управления модулями и командами модулей")
+  Component(HandlingResultsPushServiceApiClient, "Handling Results Push Service API Client", "HTTP API Client","Клиент для работы с API сервиса для отправки результатов обработки")
+
+  Component(ModulesControlServiceApiClientsProvider, "Modules Control Service API Clients Provider", "Provider", "Поставщик клиентов для взаимодействия с API сервисов управления модулями")
+
+  Component(HandleUserModulesScriptsCommandHandler, "User Modules Scripts Handler", "CQRS Handler", "Обработчик команды для обработки пользовательских сценариев управления модулями")
+  Component(HandleModuleControlCommandHandler, "Handle Module Control Command Handler", "CQRS Handler", "Обработчик команды для обработки команд управления модулем")
+  Component(UpdateUserModuleStatusCommandHandler, "Update User Module Status Command Handler", "CQRS Handler", "Обработчик команды обновления статуса пользовательского модуля")
+  Component(CreateControlModuleCommandHandler, "Create Control Module Command Handler", "CQRS Handler", "Обработчик команды создания модуля управления")
+  Component(DeleteControlModuleCommandHandler, "Delete Control Module Command Handler", "CQRS Handler", "Обработчик команды удаления модуля управления")
+  Component(PushHandlingResultsCommandHandler, "Push Handling Results Command Handler", "CQRS Handler", "Обработчик команды отправки уведомления")
+  
+  Component(ProducePushHandlingResultsCommandHandler, "Produce Push Handling Results Command Handler", "CQRS Handler", "Обработчик публикации команды отправки результатов обработки")
+  
+  Component(MessagesProducer, "Messages Producer", "Producer, RabbitMQ Client","Публикует команды и запросы в очередь")
+  Component(MessagesConsumer, "Messages Consumer", "Producer, RabbitMQ Client","Потребляет команды и запросы из очередь")
+}
+
+
+
+Rel(SmartHomeModulesControlServiceApiClient, SmartHomeModulesControlService,"Использует","JSON, REST, mTLS, HTTPS")
+Rel(WarmHouseModulesControlServiceApiClient, WarmHouseModulesControlService,"Использует","JSON, REST, mTLS, HTTPS")
+Rel(VideoTransferModulesControlServiceApiClient, VideoTransferModulesControlService,"Использует","JSON, REST, mTLS, HTTPS")
+Rel(HandlingResultsPushServiceApiClient, HandlingResultsPushService,"Использует","JSON, REST, mTLS, HTTPS")
+Rel(ModulesControlServiceApiClient, ModulesControlService,"Использует","JSON, REST, mTLS, HTTPS")
+
+Rel(ModulesControlServiceApiClientsProvider, SmartHomeModulesControlServiceApiClient,"Использует")
+Rel(ModulesControlServiceApiClientsProvider, WarmHouseModulesControlServiceApiClient,"Использует")
+Rel(ModulesControlServiceApiClientsProvider, VideoTransferModulesControlServiceApiClient,"Использует")
+
+Rel(HandleUserModulesScriptsCommandConsumer, MessagesConsumer,"Использует")
+Rel(HandleUserModulesScriptsCommandConsumer, ProducePushHandlingResultsCommandHandler,"Использует")
+Rel(HandleUserModulesScriptsCommandConsumer, HandleUserModulesScriptsCommandHandler,"Использует")
+Rel(HandleUserModulesScriptsCommandHandler, ModulesControlServiceApiClientsProvider,"Использует")
+
+Rel(HandleModuleControlCommandConsumer, MessagesConsumer,"Использует")
+Rel(HandleModuleControlCommandConsumer, ProducePushHandlingResultsCommandHandler,"Использует")
+Rel(HandleModuleControlCommandConsumer, HandleModuleControlCommandHandler,"Использует")
+Rel(HandleModuleControlCommandHandler, ModulesControlServiceApiClientsProvider,"Использует")
+
+Rel(CreateControlModuleCommandConsumer, MessagesConsumer,"Использует")
+Rel(CreateControlModuleCommandConsumer, ProducePushHandlingResultsCommandHandler,"Использует")
+Rel(CreateControlModuleCommandConsumer, CreateControlModuleCommandHandler,"Использует")
+Rel(CreateControlModuleCommandHandler, ModulesControlServiceApiClientsProvider,"Использует")
+
+Rel(DeleteControlModuleCommandConsumer, MessagesConsumer,"Использует")
+Rel(DeleteControlModuleCommandConsumer, ProducePushHandlingResultsCommandHandler,"Использует")
+Rel(DeleteControlModuleCommandConsumer, DeleteControlModuleCommandHandler,"Использует")
+Rel(DeleteControlModuleCommandHandler, ModulesControlServiceApiClientsProvider,"Использует")
+
+Rel(UpdateUserModuleStatusCommandConsumer, MessagesConsumer,"Использует")
+Rel(UpdateUserModuleStatusCommandConsumer, ProducePushHandlingResultsCommandHandler,"Использует")
+Rel(UpdateUserModuleStatusCommandConsumer, UpdateUserModuleStatusCommandHandler,"Использует")
+Rel(UpdateUserModuleStatusCommandHandler, ModulesControlServiceApiClient,"Использует")
+
+Rel(PushHandlingResultsCommandConsumer, MessagesConsumer,"Использует")
+Rel(PushHandlingResultsCommandConsumer, ProducePushHandlingResultsCommandHandler,"Использует")
+Rel(PushHandlingResultsCommandConsumer, PushHandlingResultsCommandHandler,"Использует")
+Rel(PushHandlingResultsCommandHandler, HandlingResultsPushServiceApiClient,"Использует")
+
+Rel(ProducePushHandlingResultsCommandHandler, MessagesProducer,"Использует")
+
+Rel(MessagesProducer, MessageBroker,"Публикует сообщения в", "AMQP")
+Rel(MessageBroker, MessagesConsumer,"Отправляет сообщения в", "AMQP")
+
+@enduml

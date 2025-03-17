@@ -1,0 +1,70 @@
+asyncapi: 3.0.0
+info:
+  title: Modules Service
+  version: 1.0.0
+  description: Сервис управления модулями
+channels:
+  moduleControlCommands:
+    address: modules.handle-control-commands.v1
+    description: Топик для обработки команд управления модулями
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: control-commands-topic
+          type: topic
+    messages:
+      ModuleControlCommand:
+        $ref: '#/components/messages/HandleModuleControlCommand'
+operations:
+  publishModuleControlCommand:
+    action: send
+    channel:
+      $ref: '#/channels/moduleControlCommands'
+    messages:
+      - $ref: '#/channels/moduleControlCommands/messages/ModuleControlCommand'
+components:
+  messages:
+    HandleModuleControlCommand:
+      bindings:
+          amqp:
+            contentEncoding: gzip
+            messageType: 'user.signup'
+            bindingVersion: 0.3.0
+      payload:
+        type: object
+        properties:
+           HandleModuleControlCommand:
+            type: object
+            properties:
+              ProtocolType:
+                type: string
+                description: Protocol type
+                example: warmhouse
+                enum:
+                  - warmhouse
+                  - smarthome
+                  - videotransfer
+              UserModuleId:
+                type: string
+                format: guid
+              SystemCommandType:
+                type: string
+                description: System Command Type
+                example: warmhouse
+                enum:
+                  - enable
+                  - disable
+                  - get
+              ModuleCommandParameters:
+                type: object
+                description: System Command Type
+              ClientParameters:
+                type: object
+                description: Client Parameters
+      headers:
+        type: object
+        properties:
+          schema-version:
+            type: integer
+            const: 1

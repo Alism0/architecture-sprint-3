@@ -1,0 +1,267 @@
+@startuml
+title Warm House System. Modules Control Service Code Diagram
+
+top to bottom direction
+
+!include ./templates/C4_Component.puml
+
+interface IRequest {}
+interface ICommand {}
+interface IQuery {}
+
+abstract class RequestHandler{
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class CommandHandler{
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class QueryHandler {
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class RequestDispatcher {
+  - RequestHandler[] requestHandlers
+  + Handle(request: IRequest): ProcessingResult
+}
+
+class ProcessingResult {
++ T Result
++ string Status
++ string ErrorMessage
+}
+
+class ModulesControlController{
+  - RequestDispatcher requestDispatcher
+  + GetModules(request: GetModulesQuery) : ProcessingResult
+  + PublishHandleControlCommand (request: PublishHandleControlCommand) : ProcessingResult
+}
+
+class UserModulesController{
+  - RequestDispatcher requestDispatcher 
+  + GetUserModules(request: GetUserModulesQuery) : ProcessingResult
+  + RegisterUserModule(request: RegisterUserModuleCommand) : ProcessingResult
+  + RemoveUserModule(request: RemoveUserModuleCommand) : ProcessingResult
+  + UpdateUserModule(request: UpdateUserModuleCommand) : ProcessingResult
+  + UpdateUserModuleStatus(request: UpdateUserModuleStatusCommand) : ProcessingResult
+}
+
+class UserHousesController{
+  - RequestDispatcher requestDispatcher 
+  + CreateHouse(CreateHouseCommand request) : ProcessingResult
+  + UpdateHouse(UpdateHouseCommand request) : ProcessingResult
+  + DeleteHouse(DeleteHouseCommand request) : ProcessingResult
+}
+
+class GetModulesQuery{
+}
+class GetModulesQueryHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class GetUserModulesQuery{
+}
+class GetUserModulesQueryHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class RegisterUserModuleCommand{
+}
+class RegisterUserModuleCommandHandler {
+  - OrmDbContext dbContext
+  - RequestDispatcher requestDispatcher 
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class RemoveUserModuleCommand{
+}
+class RemoveUserModuleCommandHandler {
+  - OrmDbContext dbContext
+  - RequestDispatcher requestDispatcher 
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class UpdateUserModuleCommand{
+}
+class UpdateUserModuleCommandHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class UpdateUserModuleStatusCommand{
+}
+class UpdateUserModuleStatusCommandHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class CreateUserHouseCommand{
+}
+class CreateUserHouseCommandHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class UpdateUserHouseCommand{
+}
+class UpdateUserHouseCommandHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class DeleteUserHouseCommand{
+}
+class DeleteUserHouseCommandHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class PublishCreateControlModuleCommand{
+}
+class PublishCreateControlModuleCommandHandler {
+  - MessagesProducer messagesProducer
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class PublishDeleteControlModuleCommand{
+}
+class PublishDeleteControlModuleCommandHandler {
+  - MessagesProducer messagesProducer
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class PublishHandleControlCommand{
+}
+class PublishHandleControlCommandHandler {
+  - MessagesProducer messagesProducer
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class MessagesProducer {
+  + Produce(message: IRequest): ProcessingResult
+}
+
+class OrmDbContext {
+}
+
+IRequest <|.. ICommand
+IRequest <|.. IQuery
+
+RequestHandler --> IRequest
+CommandHandler --> IRequest
+QueryHandler --> IRequest
+CommandHandler <|-- RequestHandler
+QueryHandler <|-- RequestHandler
+
+RequestHandler --> ProcessingResult
+RequestHandler --> IRequest
+
+RequestDispatcher --> RequestHandler
+RequestDispatcher --> ProcessingResult
+
+ModulesControlController --> RequestDispatcher 
+ModulesControlController --> PublishHandleControlCommand
+ModulesControlController --> GetModulesQuery
+UserModulesController --> RequestDispatcher 
+
+UserModulesController --> GetUserModulesQuery
+UserModulesController --> RegisterUserModuleCommand
+UserModulesController --> RemoveUserModuleCommand
+UserModulesController --> UpdateUserModuleCommand
+UserModulesController --> UpdateUserModuleStatusCommand
+UserModulesController --> ProcessingResult
+
+UserHousesController --> RequestDispatcher 
+UserHousesController --> CreateUserHouseCommand
+UserHousesController --> UpdateUserHouseCommand
+UserHousesController --> DeleteUserHouseCommand
+UserHousesController --> ProcessingResult
+
+GetModulesQueryHandler --> GetModulesQuery
+GetModulesQueryHandler o-- OrmDbContext
+GetModulesQueryHandler --> ProcessingResult
+
+GetUserModulesQueryHandler --> GetUserModulesQuery
+GetUserModulesQueryHandler o-- OrmDbContext
+GetUserModulesQueryHandler --> ProcessingResult
+
+RegisterUserModuleCommandHandler --> RegisterUserModuleCommand
+RegisterUserModuleCommandHandler --> MessagesProducer
+RegisterUserModuleCommandHandler o-- OrmDbContext
+RegisterUserModuleCommandHandler --> ProcessingResult
+
+RemoveUserModuleCommandHandler --> RemoveUserModuleCommand
+RemoveUserModuleCommandHandler --> MessagesProducer
+RemoveUserModuleCommandHandler o-- OrmDbContext
+RemoveUserModuleCommandHandler --> ProcessingResult
+
+UpdateUserModuleCommandHandler --> UpdateUserModuleCommand
+UpdateUserModuleCommandHandler o-- OrmDbContext
+UpdateUserModuleCommandHandler --> ProcessingResult
+
+UpdateUserModuleStatusCommandHandler --> UpdateUserModuleStatusCommand
+UpdateUserModuleStatusCommandHandler o-- OrmDbContext
+UpdateUserModuleStatusCommandHandler --> ProcessingResult
+
+CreateUserHouseCommandHandler --> CreateUserHouseCommand
+CreateUserHouseCommandHandler o-- OrmDbContext
+CreateUserHouseCommandHandler --> ProcessingResult
+
+UpdateUserHouseCommandHandler --> UpdateUserHouseCommand
+UpdateUserHouseCommandHandler o-- OrmDbContext
+UpdateUserHouseCommandHandler --> ProcessingResult
+
+DeleteUserHouseCommandHandler --> DeleteUserHouseCommand
+DeleteUserHouseCommandHandler o-- OrmDbContext
+DeleteUserHouseCommandHandler --> ProcessingResult
+
+PublishCreateControlModuleCommandHandler --> PublishCreateControlModuleCommand
+PublishCreateControlModuleCommandHandler o-- MessagesProducer
+PublishCreateControlModuleCommandHandler --> ProcessingResult
+
+PublishDeleteControlModuleCommandHandler --> PublishDeleteControlModuleCommand
+PublishDeleteControlModuleCommandHandler o-- MessagesProducer
+PublishDeleteControlModuleCommandHandler --> ProcessingResult
+
+PublishHandleControlCommandHandler --> PublishHandleControlCommand
+PublishHandleControlCommandHandler o-- MessagesProducer
+PublishHandleControlCommandHandler --> ProcessingResult
+
+GetModulesQuery --|> IQuery
+GetUserModulesQuery --|> IQuery
+
+RegisterUserModuleCommand --|> ICommand
+RemoveUserModuleCommand --|> ICommand
+UpdateUserModuleCommand --|> ICommand
+UpdateUserModuleStatusCommand --|> ICommand
+
+CreateUserHouseCommand --|> ICommand
+UpdateUserHouseCommand --|> ICommand
+DeleteUserHouseCommand --|> ICommand
+
+PublishCreateControlModuleCommand --|> ICommand
+PublishDeleteControlModuleCommand --|> ICommand
+PublishHandleControlCommand --|> ICommand
+
+GetModulesQueryHandler --* RequestDispatcher
+GetUserModulesQueryHandler --* RequestDispatcher
+
+RegisterUserModuleCommandHandler --* RequestDispatcher
+RemoveUserModuleCommandHandler --* RequestDispatcher
+UpdateUserModuleCommandHandler --* RequestDispatcher
+UpdateUserModuleStatusCommandHandler --* RequestDispatcher
+
+CreateUserHouseCommandHandler --* RequestDispatcher
+UpdateUserHouseCommandHandler --* RequestDispatcher
+DeleteUserHouseCommandHandler --* RequestDispatcher
+
+PublishCreateControlModuleCommandHandler --* RequestDispatcher
+PublishDeleteControlModuleCommandHandler --* RequestDispatcher
+PublishHandleControlCommandHandler --* RequestDispatcher
+
+MessagesProducer --> ProcessingResult
+
+@enduml

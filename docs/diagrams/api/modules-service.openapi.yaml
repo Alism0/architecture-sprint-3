@@ -1,0 +1,187 @@
+openapi: 3.0.3
+info:
+  title: Swagger Module Service - OpenAPI 3.0
+  description: |-
+    
+  version: 1.0.11
+servers:
+  - url: https://warmhouse.ru/api/v1
+tags:
+  - name: user-modules
+    description: Модули пользователя (оборудование)
+  - name: modules
+    description: Модули
+  - name: control-commands
+    description: Команды управления модулями
+paths:
+  /user-modules:
+    post:
+      tags:
+        - user-modules
+      summary: Add user module
+      description: Добавляет устройтсво пользователя
+      operationId: addUserModule
+      requestBody:
+        description: Create user-module
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserModule'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModule'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+  /modules:
+    get:
+      tags:
+        - modules
+      summary: Get all modules
+      description: Get all modules
+      operationId: getAllModules
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Module'
+        '400':
+          description: Invalid status value
+          
+  /user-modules/{moduleId}/control-commands:
+    post:
+      tags:
+        - user-modules
+      summary: Handle user modules control commands
+      description: ''
+      operationId: handleUserModulesCommands
+      parameters:
+        - name: moduleId
+          in: path
+          description: Id user module
+          required: true
+          schema:
+            type: string
+            format: guid
+      requestBody:
+        description: Handle user modules control commands
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleControlCommand'
+        required: true
+      responses:
+        '400':
+          description: Invalid input
+          
+components:
+  schemas:
+    Module:
+      type: object
+      properties:
+        id:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        UserId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        Module:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        Id:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        name:
+          type: string
+        ProtocolType:
+          type: string
+          description: Protocol type
+          example: warmhouse
+          enum:
+            - warmhouse
+            - smarthome
+            - videotransfer
+        DeviceSystemType:
+          type: string
+          description: Protocol type
+          example: warmhouse
+          enum:
+            - lighting
+            - monitoringsensor
+            - videocontrol
+            - heatingcontrol 
+            - gatescontrol
+    UserModule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        userId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        moduleId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        userHouseId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        name:
+          type: string
+        status:
+          type: string
+          description: Module Status
+          example: enabled
+          enum:
+            - undefined
+            - enabled
+            - disabled
+            - registering
+        serialNumber:
+          type: string
+    ModuleControlCommand:
+      type: object
+      properties:
+        ProtocolType:
+          type: string
+          description: Protocol type
+          example: warmhouse
+          enum:
+            - warmhouse
+            - smarthome
+            - videotransfer
+        UserModuleId:
+          type: string
+          format: guid
+        SystemCommandType:
+          type: string
+          description: System Command Type
+          example: warmhouse
+          enum:
+            - enable
+            - disable
+            - get
+        ModuleCommandParameters:
+          type: object
+          description: System Command Type
+        ClientParameters:
+          type: object
+          description: Client Parameters
