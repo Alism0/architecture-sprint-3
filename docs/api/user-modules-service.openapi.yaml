@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Swagger Module Service - OpenAPI 3.0
+  description: |-
+    
+  version: 1.0.11
+servers:
+  - url: https://warmhouse.ru/api/v1
+tags:
+  - name: user-modules
+    description: Модули пользователей
+paths:
+  /user-modules:
+    post:
+      tags:
+        - user-modules
+      summary: Add user module
+      description: Добавляет устройство пользователя
+      operationId: addUserModule
+      requestBody:
+        description: Create user module
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserModule'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModule'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+components:
+  schemas:
+    UserModule:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        moduleId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        moduleTypeId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        houseId:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          description: Module Status
+          example: enabled
+          enum:
+            - undefined
+            - enabled
+            - disabled
+            - registering
+        serialNumber:
+          type: string
+        registrationDate:
+          type: string
+          format: date
+        protocolModuleParameters:
+          type: object
+          description: Protocol Module Parameters

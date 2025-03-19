@@ -5,7 +5,7 @@ info:
   description: Сервис управления модулями
 channels:
   moduleControlCommands:
-    address: modules.handle-control-commands.v1
+    address: module-control-commands.handle.v1
     description: Топик для обработки команд управления модулями
     bindings:
       amqp:
@@ -45,13 +45,13 @@ components:
                   - warmhouse
                   - smarthome
                   - videotransfer
-              UserModuleId:
+              ModuleId:
                 type: string
                 format: guid
-              SystemCommandType:
+              CommandSystemType:
                 type: string
-                description: System Command Type
-                example: warmhouse
+                description: Command System Type
+                example: enable
                 enum:
                   - enable
                   - disable

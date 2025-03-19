@@ -1,0 +1,122 @@
+@startuml
+title Warm House System ER Diagram
+
+
+top to bottom direction
+
+!include ../templates/C4_Component.puml
+
+class User {
++ GUID Id
++ string FirstName
++ string SecondName
++ string PatronymicName
++ string Username
++ string Email
++ DateOnly Birthday
+}
+
+class ProtocolCommandType {
++ GUID Id
++ string ProtocolVersion
++ string ProtocolSystemType
++ string ModuleSystemType
++ string CommandSystemType
++ bool IsSystemCommand
+}
+
+class ProtocolModuleType {
++ GUID Id
++ string ProtocolVersion
++ string ProtocolSystemType
++ string ModuleSystemType
+}
+
+class ModuleCommandType {
++ GUID Id
++ GUID ProtocolCommandId
++ bool IsDisabled
+}
+
+class ModuleTypeToModuleCommandType {
++ GUID ModuleTypeId
++ GUID ModuleCommandTypeId
+}
+
+class ModuleType {
++ GUID Id
++ string ProtocolSystemType
++ GUID ProtocolModuleTypeId
++ ModuleCommandType[] CommandTypes
+}
+
+class UserModule {
++ GUID ModuleId
++ string Name
++ string ModuleStatus
++ GUID UserId
++ long HouseId
++ GUID ModuleTypeId
++ DateOnly RegistrationDate
+}
+
+class House {
++ long Id
++ string Name
+}
+
+class HouseToUser {
++ GUID UserId
++ long HouseId
+}
+
+class ModuleState {
++ long Id
++ GUID UserId
++ GUID ModuleId
++ GUID ModuleTypeId
++ string ProtocolVersion
++ string ModuleSystemType
++ jsonb State
+}
+
+class ModuleControlCommand {
++ long ModuleStateId
++ string CommandSystemType
++ string Status
+}
+
+class ModuleScenario {
++ long ModuleStateId
++ string Status
++ string Name
++ jsonb Scenario
+}
+
+class Module {
++ GUID ModuleId
++ string ModuleSystemType
++ string SerialNumber
++ string RegistrationInfo
++ DateOnly RegistrationDate
++ jsonb ProtocolModuleParameters
+}
+
+ModuleType "0..*" --* "1..1" ProtocolModuleType
+ModuleType "1..1" *-- "0..1" ModuleTypeToModuleCommandType
+ModuleTypeToModuleCommandType "0..1" --* "1..1" ModuleCommandType
+ModuleCommandType "0..*" --* "1..1" ProtocolCommandType
+
+UserModule "1..1" *-- "1..1" Module
+UserModule "1..1" *-- "1..1" ModuleState
+UserModule "0..*" --* "1..1" ModuleType
+UserModule "0..*" -- "1..1" House
+UserModule "0..*" --* "1..1" User
+
+House "1..1" *-- "0..1" HouseToUser
+HouseToUser "0..1" --* "1..1" User
+
+ModuleState "1..1" *-- "0..*" ModuleScenario
+ModuleState "1..1" *-- "1..*" ModuleControlCommand
+
+@enduml

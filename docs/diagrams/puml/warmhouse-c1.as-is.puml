@@ -3,7 +3,7 @@ title Warm House Context
 
 top to bottom direction
 
-!includeurl ./templates/C4_Context.puml
+!includeurl ../templates/C4_Context.puml
 
 
 Person(Users, "Пользователи", "Пользователи системы 'Теплый дом'")
