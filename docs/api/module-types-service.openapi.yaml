@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Swagger Module Service - OpenAPI 3.0
+  description: |-
+    
+  version: 1.0.11
+servers:
+  - url: https://warmhouse.ru/api/v1
+tags:
+  - name: module-types
+    description: Типы модулей
+paths:
+  /module-types:
+    get:
+      tags:
+        - module-types
+      summary: Get module types
+      description: Get module types
+      operationId: getModuleTypes
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModuleType'
+        '400':
+          description: Invalid status value
+components:
+  schemas:
+    ModuleType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        protocolModuleId:
+          type: string
+          format: guid
+          example: "0b5bbb2e-b58d-46c9-9da5-a4d8697c5832"
+        protocolType:
+          type: string
+          description: Protocol type
+          example: warmhouse
+          enum:
+            - warmhouse
+            - smarthome
+            - videotransfer
+        commandTypes:
+          type: object
+          description: Commands
+        protocolModuleType:
+          type: object
+          description: Protocol Module

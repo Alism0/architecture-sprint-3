@@ -1,0 +1,19 @@
+@startuml
+title Warm House Context
+
+top to bottom direction
+
+!includeurl ../templates/C4_Context.puml
+
+
+Person(Users, "Пользователи", "Пользователи системы 'Теплый дом'")
+System(WormHouseSystem, "Worm House System", "Система управления отоплением дома и мониторинга температуры")
+
+System_Ext(HouseTemperatureMonitoringSensors, "House Temperature Monitoring Sensors", "Датчики мониторинга температуры дома")
+System_Ext(HouseHeatingControlDevices, "House Heating Control Devices", "Устройства управления отопления домом")
+
+Rel(Users, WormHouseSystem, "Просматривает данные о температуре из; Включает/Выключает отопление в;")
+Rel(WormHouseSystem,HouseTemperatureMonitoringSensors,"Получает телеметрию из;")
+Rel(WormHouseSystem,HouseHeatingControlDevices,"Получает текущее состояние из; Включает/Выключает отопление в;")
+
+@enduml

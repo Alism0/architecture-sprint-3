@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Swagger Module Service - OpenAPI 3.0
+  description: |-
+    
+  version: 1.0.11
+servers:
+  - url: https://warmhouse.ru/api/v1
+tags:
+  - name: modules-control
+    description: Управление модулями
+paths:
+  /module-states/{moduleStateId}/control-commands/{commandSystemType}:
+    post:
+      tags:
+        - modules-control
+      summary: Handle module control command
+      description: ''
+      operationId: handleModuleControlCommand
+      parameters:
+        - name: moduleStateId
+          in: path
+          description: Module State Id
+          required: true
+          schema:
+            type: string
+            format: guid
+        - name: commandSystemType
+          in: path
+          description: Command system type
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Handle module control command
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleControlCommand'
+        required: true
+      responses:
+        '400':
+          description: Invalid input
+          
+components:
+  schemas:
+    ModuleControlCommand:
+      type: object
+      properties:
+        commandSystemType:
+          type: string
+          description: Command System Type
+          example: enable
+          enum:
+            - undefined
+            - enable
+            - disable
+            - get-status
+        commandParameters:
+          type: object
+          description: Command Parameters

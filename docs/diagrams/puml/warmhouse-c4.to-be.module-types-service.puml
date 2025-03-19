@@ -1,0 +1,99 @@
+@startuml
+title Warm House System. Modules Control Service Code Diagram
+
+top to bottom direction
+
+!include ../templates/C4_Component.puml
+
+interface IRequest {}
+interface ICommand {}
+interface IQuery {}
+
+abstract class RequestHandler{
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class CommandHandler{
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class QueryHandler {
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class RequestDispatcher {
+  - RequestHandler[] requestHandlers
+  + Handle(request: IRequest): ProcessingResult
+}
+
+class ProcessingResult {
++ T Result
++ string Status
++ string ErrorMessage
+}
+
+class ModuleTypesController{
+  - RequestDispatcher requestDispatcher 
+  + GetModuleTypes(request: GetUserModulesQuery) : ProcessingResult
+}
+
+class HandleProtocolUpdatedEventCommand{
+}
+class HandleProtocolUpdatedEventCommandHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class GetModuleTypesQuery{
+}
+class GetModuleTypesQueryHandler {
+  - OrmDbContext dbContext
+  + Execute(request: IRequest): ProcessingResult
+}
+
+class MessagesConsumer {
+  - RequestDispatcher requestDispatcher 
+  + Consume()
+}
+
+class OrmDbContext {
+}
+
+IRequest <|.. ICommand
+IRequest <|.. IQuery
+
+RequestHandler --> IRequest
+CommandHandler --> IRequest
+QueryHandler --> IRequest
+CommandHandler --|> RequestHandler
+QueryHandler --|> RequestHandler
+
+RequestHandler --> ProcessingResult
+RequestHandler --> IRequest
+
+RequestDispatcher --> RequestHandler
+RequestDispatcher --> ProcessingResult
+
+ModulesTypesController --> RequestDispatcher 
+ModulesTypesController --> GetModuleTypesQuery
+ModulesTypesController --> ProcessingResult
+
+ModuleTypesController --> GetModuleTypesQuery
+ModuleTypesController o-- OrmDbContext
+ModuleTypesController --> ProcessingResult
+
+HandleProtocolUpdatedEventCommandHandler --> HandleProtocolUpdatedEventCommand
+HandleProtocolUpdatedEventCommandHandler o-- OrmDbContext
+HandleProtocolUpdatedEventCommandHandler --> ProcessingResult
+
+GetModuleTypesQuery --|> IQuery
+HandleProtocolUpdatedEventCommand --|> ICommand
+
+MessagesConsumer o-- RequestDispatcher
+MessagesConsumer --> ProcessingResult
+MessagesConsumer --> HandleProtocolUpdatedEventCommand
+
+GetModuleTypesQueryHandler --* RequestDispatcher
+HandleProtocolUpdatedEventCommandHandler --* RequestDispatcher
+
+@enduml

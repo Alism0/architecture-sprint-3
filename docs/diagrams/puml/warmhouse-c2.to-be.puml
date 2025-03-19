@@ -1,0 +1,128 @@
+@startuml
+
+title Warm House Container Diagram
+
+top to bottom direction
+
+!include ../templates/C4_Container.puml
+
+Person(Users, "Пользователи", "Пользователи системы 'Теплый дом'")
+
+Container_Boundary(UserDeviceBoundary, "Устройство пользователя [IOS/Android]") {
+  Container(WarmHouseMobileClient, "Warm House Mobile Client", "React Native", "Мобильный клиент 'Теплый дом'")
+}
+
+System_Boundary(WarmHouseSystem, "Warm House System") {
+
+  Container(MobileClientApiGateway, "Mobile Client API Gateway", "KrakenD", "Шлюз для маршрутизации запросов, аутентификации, авторизации и SSL завершения")
+  
+  Container_Boundary(AuthServicesBoundary, "Auth Services") {
+    Container(AuthService, "Auth Service", "Java", "Сервис для регистрации и управления пользователями, аутентификации и управления доступами")
+    ContainerDb(AuthServicesDb, "Auth Service DB", "Postgres", "БД на сервис для хранения данных о пользователях и их доступах")
+  }
+
+  Container_Boundary(ServicesLoadBalancerBoundary, "User Services Load Balancer [nginx]") {
+    Container(PushSendingService, "PushService", "Java", "Сервис отправки push'ей")
+    
+    Container(TelemetryStreamsService, "Telemetry Streams Service", "Java", "Сервис обработки телеметрии")
+    Container(VideoStreamsService, "Video Streams Service", "Java", "Сервис обработки стриминга видео")
+    
+    Container(ModuleTypesService, "Module Types Service", "Java", "Сервис для работы с типами модулей")
+    Container(UserModulesControlService, "User Modules Control Service", "Java", "Сервис управления модулями пользователя")
+    Container(UserModulesService, "User Modules Service", "Java", "Сервис модулей пользователей")
+  }
+  ContainerQueue(ModulesStreams, "Modules Streams", "RabbitMQ Streams", "Стримы модулей")
+  ContainerDb(ModulesServicesDb, "Modules Services DB", "Postgres", "Расшаренная БД сервисов для работы с модулями")
+
+  Container(ModulesControlMessagesProcessingService, "Modules Control Messages Processing Service", "Java", "Сервис обработки сообщений управления модулями")
+  
+  ContainerQueue(MessageBroker, "Message Broker", "RabbitMQ", "Брокер сообщений для асинхронных операций")
+
+  Container_Boundary(ModulesControlServicesLoadBalancerBoundary, "Modules Control Services Load Balancer [nginx]") {
+    Container(VideoTransferModulesControlService, "Video Transfer Modules Control Service", "Java, Adapter, Video Transfer Control Protocol", "Сервис для управления модулями видеопередачи")
+    Container(SmartHomeModulesControlService, "Smart Home Modules Control Service", "Java, Adapter, Smart Home Control Protocol", "Сервис для управления модулями умного дома по стандартному протоколу")
+    Container(WarmHouseModulesControlService, "Warm House Modules Control Service", "Java, Adapter, Warm House Control Protocol", "Сервис для управления модулями 'Теплый дом' по прежнему протоколу")
+  }
+  ContainerDb(ModulesControlServicesDb, "Modules Control Services DB", "Postgres", "Расшаренная БД сервисов управления модулями")
+
+  Container(DevicesApiGateway, "Devices API Gateway", "KrakenD", "Шлюз для маршрутизации запросов от устройств, авторизации устройств и SSL завершения")
+}
+
+Container_Boundary(VideoTransferControlProtocolModulesBoundary, "Video Transfer Control Protocol Modules"){
+  Container_Ext(VideoTransferDevice, "Video Transfer Device", "Устройство видеопередачи")
+}
+
+Container_Boundary(SmartHomeControlProtocolModulesBoundary, "Smart Home Control Protocol Modules"){
+  Container_Ext(GatesControlDevice, "Gates Control Devices","Device","Устройство управления воротами")
+  Container_Ext(LightingDevice, "Lighting Device","Device","Устройство управления освещением")
+  Container_Ext(TemperatureMonitoringSensor, "Temperature Monitoring Sensor","Sensor","Датчик мониторинга температуры")
+  Container_Ext(HeatingControlDevice, "Heating Control Device","Device","Устройство управления отоплением")
+}
+
+Container_Boundary(WarmHouseControlProtocolModulesBoundary, "Warm House Control Protocol Modules"){
+  Container_Ext(WarmHouseTemperatureMonitoringSensor, "Temperature Monitoring Sensor","Sensor","Датчик мониторинга температуры")
+  Container_Ext(WarmHouseHeatingControlDevice, "Heating Control Device","Device","Устройство управления отоплением")
+}
+
+Rel(Users, WarmHouseMobileClient, "Регистрируется в сервисе; Подключает модули; Управляет сценариями устройств; Просматривает телеметрию с датчиков; Управляет устройствами умного дома и другое")
+Rel(WarmHouseMobileClient, MobileClientApiGateway, "Отправляет запросы в;", "JSON, REST, JWT, HTTPS")
+
+Rel(MobileClientApiGateway, AuthService, "Регистрируется в; Аутентифицируется в; Получает токены из;", "OIDC, HTTPS")
+Rel(AuthService, AuthServicesDb, "CRUD", "TCP")
+
+Rel(MobileClientApiGateway, VideoStreamsService, "Получает видеопоток из", "UDP")
+Rel(ModulesStreams, VideoStreamsService, "Отправляет видеопоток в", "AMQP")
+
+Rel(MobileClientApiGateway, TelemetryStreamsService, "Получает телеметрию из", "UDP")
+Rel(ModulesStreams, TelemetryStreamsService, "Отправляет телеметрию в", "AMQP")
+
+Rel(PushSendingService, UserDeviceBoundary, "Отправляет push'и в", "Web Sockets")
+
+Rel(MobileClientApiGateway, ModuleTypesService, "Получает типы модулей и доступные для типа модуля команды из; Создает тип модуля в; Удаляет тип модуля в;", "JSON, REST, mTLS, HTTPS")
+Rel(MobileClientApiGateway, UserModulesService, "Получает модули пользователя из; Регистрирует модуль пользователя в; Редактирует описание модуля пользователя в; Создает дом в; и другие", "JSON, REST, mTLS, HTTPS")
+Rel(MobileClientApiGateway, UserModulesControlService, "Создает команду управления модулем в; Получает статус команды управления модулем из; Получает статус модуля из; Создает пользовательские сценарии в; и другие", "JSON, REST, mTLS, HTTPS")
+
+Rel(UserModulesService, MessageBroker, "Публикует команду для создания модуля в сервисе управления модулями соответствующего протокола; Публикует команду для создания состояния модуля в;", "AMQP")
+Rel(UserModulesService, ModulesServicesDb, "CRUD", "TCP")
+
+Rel(ModuleTypesService, ModulesServicesDb, "CRUD", "TCP")
+
+Rel(UserModulesControlService, MessageBroker, "Публикует команду управления модулем в;", "AMQP")
+Rel(UserModulesControlService, ModulesServicesDb, "CRUD", "TCP")
+
+Rel(ModulesControlMessagesProcessingService, MessageBroker, "Публикует результаты обработки команд и запросов в;", "AMQP")
+Rel(ModulesControlMessagesProcessingService, VideoTransferModulesControlService, "Вызывает создание/удаление модуля пользователя в; Вызывает выполнение команды в;", "JSON, REST, mTLS, HTTPS")
+Rel(ModulesControlMessagesProcessingService, SmartHomeModulesControlService, "Вызывает создание/удаление модуля пользователя в; Вызывает выполнение команды в;", "JSON, REST, mTLS, HTTPS")
+Rel(ModulesControlMessagesProcessingService, WarmHouseModulesControlService, "Вызывает создание/удаление модуля пользователя в; Вызывает выполнение команды в;", "JSON, REST, mTLS, HTTPS")
+
+Rel(MessageBroker, PushSendingService, "Передает сообщение для отправки запроса в", "AMQP")
+Rel(MessageBroker, ModulesControlMessagesProcessingService, "Передает команды управления модулями в; Передает результаты обработки команд и запросов в;", "AMQP")
+Rel(MessageBroker, ModuleTypesService, "Передает события с изменениями типов модулей и команд в;", "AMQP")
+Rel(MessageBroker, UserModulesControlService, "Передает результаты команды управления модулем в; Передает команду для создания состояния модуля в;", "AMQP")
+Rel(MessageBroker, UserModulesService, "Передает результат команды создания/удаления модуля в;", "AMQP")
+
+Rel(VideoTransferModulesControlService, VideoTransferDevice, "Получает текущий статус из; Включает/отключает видеотрансляцию в;", "Video Transfer Control Protocol, TCP")
+Rel(VideoTransferModulesControlService, ModulesStreams, "Публикует видеопоток в;", "AMQP")
+Rel(VideoTransferModulesControlService, ModulesControlServicesDb, "CRUD", "TCP")
+
+Rel(SmartHomeModulesControlService, GatesControlDevice, "Получает текущий статус из; Открывает/закрывает ворота в;", "Smart Home Control Protocol, TCP")
+Rel(SmartHomeModulesControlService, LightingDevice, "Получает текущий статус из; Включает/отключает освещение в;", "Smart Home Control Protocol, TCP")
+Rel(SmartHomeModulesControlService, TemperatureMonitoringSensor, "Получает текущий статус и показания из; Включает/отключает передачу телеметрии в;", "Smart Home Control Protocol, TCP")
+Rel(SmartHomeModulesControlService, HeatingControlDevice, "Получает текущий статус из; Включает/отключает отопление в;", "Smart Home Control Protocol, TCP")
+Rel(SmartHomeModulesControlService, ModulesStreams, "Публикует поток телеметрии в;", "AMQP")
+Rel(SmartHomeModulesControlService, MessageBroker, "Публикует события изменения типов модулей и команд доступных для протокола в;", "AMQP")
+Rel(SmartHomeModulesControlService, ModulesControlServicesDb, "CRUD", "TCP")
+
+Rel(WarmHouseModulesControlService, WarmHouseTemperatureMonitoringSensor, "Получает текущий статус и показания из;", "Warm House Control Protocol, TCP")
+Rel(WarmHouseModulesControlService, WarmHouseHeatingControlDevice, "Получает текущий статус из; Включает/отключает отопление в;", "Warm House Control Protocol, TCP")
+Rel(WarmHouseModulesControlService, MessageBroker, "Публикует события изменения типов модулей и команд доступных для протокола в;", "AMQP")
+Rel(WarmHouseModulesControlService, ModulesControlServicesDb, "CRUD", "TCP")
+
+Rel(TemperatureMonitoringSensor, DevicesApiGateway, "Передает поток телеметрии в;", "Smart Home Protocol, TCP")
+Rel(WarmHouseModulesControlService, MessageBroker, "Публикует события изменения типов модулей и команд доступных для протокола в;", "AMQP")
+Rel(VideoTransferDevice, DevicesApiGateway, "Передает видеопоток в;", "Video Transfer Protocol, TCP")
+
+Rel(DevicesApiGateway, VideoTransferModulesControlService, "Передает видеопоток в;", "Video Transfer Protocol, TCP")
+Rel(DevicesApiGateway, SmartHomeModulesControlService, "Передает поток телеметрии в;", "Smart Home Protocol, TCP")
+
+@enduml

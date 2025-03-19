@@ -1,0 +1,80 @@
+@startuml
+title Warm House System. Modules Control Service Component Diagram
+
+top to bottom direction
+
+!include ../templates/C4_Component.puml
+
+System_Boundary(WarmHouseSystemBoundary, "Warm House System") {
+  ContainerDb(ModulesServicesDb, "Modules Services DB", "Postgres", "Расшаренная БД сервисов для работы с модулями")
+  Container(UserModulesService, "User Modules Service", "Java", "Сервис модулей пользователей")
+  Container(MobileClientApiGateway, "Mobile Client API Gateway", "KrakenD", "Шлюз для маршрутизации запросов, аутентификации, авторизации и SSL завершения")
+  ContainerQueue(MessageBroker, "Message Broker", "RabbitMQ", "Брокер сообщений для асинхронных операций")
+}
+
+Container(UserModulesService, "Modules Control Service", "Java") {
+  Component(UserModulesController, "User Modules Controller", "Controller","Обрабатывает запросы для работы с модулями пользователя")
+  Component(HousesController, "Houses Controller", "Controller","Обрабатывает запросы управления домами")
+ 
+  Component(GetUserModulesQueryHandler, "Get User Modules Query Handler", "CQRS Handler, ORM", "Обработчик запроса модулей пользователя")
+  Component(HandleModuleCreatingCommandHandler, "Create Handle Module Creating Command Handler", "CQRS Handler, ORM", "Обработчик команды обработки создания модуля")
+  Component(HandleModuleDeletingCommandHandler, "Handle Module Deleting Command Handler", "CQRS Handler, ORM", "Обработчик публикации обработки удаления модуля")
+  Component(UpdateUserModuleCommandHandler, "Update User Module Command Handler", "CQRS Handler, ORM", "Обработчик команды обновления модуля пользователя")
+
+  Component(CreateHouseCommandHandler, "Create House Command Handler", "CQRS Handler, ORM", "Обработчик команды создания дома")
+  Component(UpdateHouseCommandHandler, "Update House Command Handler", "CQRS Handler, ORM", "Обработчик команды обновления дома")
+  Component(DeleteHouseCommandHandler, "Delete House Command Handler", "CQRS Handler, ORM", "Обработчик команды удаления дома")
+
+  Component(MessagesProducer, "Messages Producer", "Producer, RabbitMQ Client","Публикует команды и запросы в очередь")
+  Component(MessagesConsumer, "Messages Consumer", "Consumer, RabbitMQ Client","Получает команды и запросы из очереди")
+
+  Component(HandleModuleCreatingHandledEventHandler, "Handle Module Creating Handled Event Handler", "CQRS Handler, ORM","Обработчик события завершения обработки создания модуля")
+  Component(HandleModuleDeletingHandledEventHandler, "Handle Module Deleting Handled Event Handler", "CQRS Handler, ORM","Обработчик события завершения обработки удаления модуля")
+  Component(HandleModuleStateCreatingHandledEventHandler, "Handle Module State Creating Handled Event Handler", "CQRS Handler, ORM","Обработчик события завершения обработки создания состояния модуля")
+  Component(HandleModuleStateDeletingHandledEventHandler, "Handle Module State Deleting Handled Event Handler", "CQRS Handler, ORM","Обработчик события завершения обработки состояния модуля")
+}
+
+
+Rel(MobileClientApiGateway, UserModulesController,"Использует", "JSON, REST, mTLS, HTTPS")
+Rel(MobileClientApiGateway, HousesController,"Использует", "JSON, REST, mTLS, HTTPS")
+
+Rel(UserModulesController, GetUserModulesQueryHandler,"Использует")
+Rel(UserModulesController, HandleModuleCreatingCommandHandler,"Использует")
+Rel(UserModulesController, HandleModuleDeletingCommandHandler,"Использует")
+Rel(UserModulesController, UpdateUserModuleCommandHandler,"Использует")
+
+Rel(HousesController, CreateHouseCommandHandler,"Использует")
+Rel(HousesController, UpdateHouseCommandHandler,"Использует")
+Rel(HousesController, DeleteHouseCommandHandler,"Использует")
+
+Rel(GetUserModulesQueryHandler, ModulesServicesDb,"Использует")
+
+Rel(HandleModuleCreatingCommandHandler, ModulesServicesDb,"Использует")
+Rel(HandleModuleCreatingCommandHandler, MessagesProducer,"Использует")
+
+Rel(HandleModuleDeletingCommandHandler, ModulesServicesDb,"Использует")
+Rel(HandleModuleDeletingCommandHandler, MessagesProducer,"Использует")
+
+Rel(HandleModuleCreatingHandledEventHandler, MessagesProducer,"Использует")
+Rel(HandleModuleDeletingHandledEventHandler, MessagesProducer,"Использует")
+Rel(HandleModuleStateCreatingHandledEventHandler, MessagesProducer,"Использует")
+Rel(HandleModuleStateDeletingHandledEventHandler, MessagesProducer,"Использует")
+
+Rel(CreateHouseCommandHandler, ModulesServicesDb,"Использует", "TCP")
+Rel(UpdateHouseCommandHandler, ModulesServicesDb,"Использует", "TCP")
+Rel(DeleteHouseCommandHandler, ModulesServicesDb,"Использует", "TCP")
+
+Rel(MessagesProducer, MessageBroker,"Публикует сообщения в", "AMQP")
+Rel(MessageBroker, MessagesConsumer,"Отправляет сообщения в", "AMQP")
+
+Rel(MessagesConsumer, HandleModuleCreatingHandledEventHandler,"Использует")
+Rel(MessagesConsumer, HandleModuleDeletingHandledEventHandler,"Использует")
+Rel(MessagesConsumer, HandleModuleStateCreatingHandledEventHandler,"Использует")
+Rel(MessagesConsumer, HandleModuleStateDeletingHandledEventHandler,"Использует")
+
+Rel(HandleModuleCreatingHandledEventHandler, ModulesServicesDb,"Использует")
+Rel(HandleModuleDeletingHandledEventHandler, ModulesServicesDb,"Использует")
+Rel(HandleModuleStateCreatingHandledEventHandler, ModulesServicesDb,"Использует")
+Rel(HandleModuleStateDeletingHandledEventHandler, ModulesServicesDb,"Использует")
+
+@enduml
