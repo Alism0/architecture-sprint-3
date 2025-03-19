@@ -73,7 +73,7 @@
 
 **C1. Диаграмма контекста (Context)**
 
-![image](docs\diagrams\png\warmhouse-c1.as-is\warmhouse-c1.as-is.png)
+![image](docs/diagrams/png/warmhouse-c1.as-is/warmhouse-c1.as-is.png)
 
 
 # Задание 2. Проектирование микросервисной архитектуры
@@ -82,17 +82,17 @@
 
 ***C2. Warm House System. To-Be***
 
-![image](docs\diagrams\png\warmhouse-c2.to-be\warmhouse-c2.to-be.png)
+![image](docs/diagrams/png/warmhouse-c2.to-be/warmhouse-c2.to-be.png)
 
 **Диаграмма компонентов (Components)**
 
 ***C3. Warm House System. To-Be. Сервис модулей пользователей***
 
-![image](docs\diagrams\png\warmhouse-c3.to-be.user-modules-service\warmhouse-c3.to-be.user-modules-service.png)
+![image](docs/diagrams/png/warmhouse-c3.to-be.user-modules-service/warmhouse-c3.to-be.user-modules-service.png)
 
 ***C3. Warm House System. To-Be. Сервис обработки сообщений управления модулями***
 
-![image](docs\diagrams\png\warmhouse-c3.to-be.modules-control-messages-processing-service\warmhouse-c3.to-be.modules-control-messages-processing-service.png)
+![image](docs/diagrams/png/warmhouse-c3.to-be.modules-control-messages-processing-service/warmhouse-c3.to-be.modules-control-messages-processing-service.png)
 
 **Диаграмма кода (Code)**
 
@@ -102,7 +102,7 @@
 
 # Задание 3. Разработка ER-диаграммы
 
-![image](docs\diagrams\png\warmhouse-c4.to-be.ER\warmhouse-c4.to-be.ER.png)
+![image](docs/diagrams/png/warmhouse-c4.to-be.ER/warmhouse-c4.to-be.ER.png)
 
 ✅ — вы выполнили задание.
 
@@ -114,10 +114,10 @@
 
 ### 2. Документация API
 
-[REST API сервиса модулей пользователей](docs\api\user-modules-service.openapi.yaml)
+[REST API сервиса модулей пользователей](docs/api/user-modules-service.openapi.yaml)
 
-[REST API сервиса типов модулей](docs\api\module-types-service.openapi.yaml)
+[REST API сервиса типов модулей](docs/api/module-types-service.openapi.yaml)
 
-[REST API сервиса управления модулями пользователя](docs\api\user-modules-control-service.openapi.yaml)
+[REST API сервиса управления модулями пользователя](docs/api/user-modules-control-service.openapi.yaml)
 
-[Async API обработки команды управления модулем](docs\api\module-contol-commands.async-api.yaml)
+[Async API обработки команды управления модулем](docs/api/module-contol-commands.async-api.yaml)
